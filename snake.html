@@ -8,7 +8,7 @@
 		window.onload = () => {
 			const game = new SnakeGame(document.getElementById("snake").getContext('2d'));
 			window.onkeydown = game.keypress.bind(game);
-			setInterval(() => {game.step(); game.draw()}, 100);
+			setInterval(() => {game.step(); game.draw()}, 200);
 		}
 	</script>
 </body>

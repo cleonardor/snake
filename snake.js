@@ -21,15 +21,15 @@ class SnakeGame {
 		this.new_apple();
 		this.direction = null;
 		this.next_direction = null;
-		this.input_queue = [];
+		/*this.input_queue = [];*//*IMPROVE: innecesary attribute*/
 	}
-	collides_with(snake, square) {
+	/*collides_with(snake, square) {
 		return snake.reduce(
 			(dead, segment) => collides(segment, new_segment), 
 		false)
-	}
+	}*//*IMPROVE: innecesary method*/
 	new_apple() {
-		if (this.snake.length >= this.dims[0] * this.dims[1]) this.new_game();
+		if (this.snake.length >= this.dims[0] * this.dims[1]) this.new_game();/*si la serpiente llena el tablero se reinicia el juego*/
 		do {
 			this.apple = {
 				x: Math.floor(Math.random() * this.dims[0]),
@@ -38,7 +38,21 @@ class SnakeGame {
 		} while (collides_with_snake(this.snake, this.apple));
 	}
 	is_dead(new_segment) {
+		/*UNDERSTANDING: con slide quida el primer segmento, la cabeza puede colisionar con el
+		 resto del cuerpo pero no con el último segmento de la cola, que se quitará 
+		 porque se va moviendo*/
 		return collides_with_snake(this.snake.slice(1), new_segment);
+	}
+	is_crash_wall(head,new_segment){
+		/*the head can be in the border but if the next movement is against the wall it die*/
+		if (head.x === 0 && new_segment.x === this.dims[0]-1
+			|| head.x === this.dims[0]-1 && new_segment.x === 0
+			|| head.y === 0 && new_segment.y === this.dims[1]-1
+			|| head.y === this.dims[1]-1 && new_segment.y === 0) {
+				return true;
+		} else{
+			return false;
+		}
 	}
 	step() {
 		this.direction = this.get_next_direction();
@@ -51,15 +65,28 @@ class SnakeGame {
 			y: mod(head.y + this.direction.y, dy),
 		};
 		
-		if (this.is_dead(new_segment)) this.new_game();
+		/*now evaluate if the snake crash against the wall*/
+		if (this.is_dead(new_segment) || this.is_crash_wall(head, new_segment)) {
+			this.new_game();
+			return;
+			/*IMPROVE: when the game restart the snake has the correct segments*/
+		}
 
 		if (collides(new_segment, this.apple)){
 			this.new_apple();
 		} else if (this.snake.length > 5) {
 			this.snake.shift();
+			/*UNDERSTANDING: cuando la inicia la serpiente es de un sólo cuadro, crece hasta que tenga longitud 5
+			despues de eso sólo crece si colisiona con la manzana.
+			cuando no colisiona se remueve el primer segmento del arreglo, la cabeza del array es la cola de la serpiente*/
 		}
-		this.snake.push(new_segment);
-		this.draw()
+		this.snake.push(new_segment);/*UNDERSTANDING: agrega el segmento al final del arreglo, la cola del array es la cabeza de la serpiente*/
+		/*this.draw()*//*IMPROVE: call this.draw() is redundant. The method is called in snake.html*/
+		
+		/*UNDERSTANDING: en cada paso se crea un nuevo segmento según la dirección en la que vaya la serpiente
+		se mira si el nuevo segmento colisiona con el cuerpo de la serpiente, si así es reinicia el juego
+		se mira si el nuevo segmento colisiona con la manzana, si así es se crea una nueva y no se borra un segmento porlo que la serpiente va creciendo
+		se agrega el nuevo segmento a la serpiente habiendo eliminado el primero y se manda a dibujar*/
 	}
 	draw() {
 		this.ctx.clearRect(0, 0, this.gamesize + 11, this.gamesize + 11);
